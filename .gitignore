@@ -1,0 +1,47 @@
+
+# dependencies
+/node_modules
+
+# production
+/dist
+
+# TypeScript
+**/*.tsbuildinfo
+
+# dotenv environment variables file
+.env
+
+# MacOS folder attribute files
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional tsc cache
+*.tsbuildinfo
+
+# Optional IDE files
+/.idea
+*.sublime-project
+*.sublime-workspace
+.vscode/
+*.code-workspace
+
+# Optional typings
+typings/
+
+# Optional test coverage directory
+/coverage
+
+# Optional nyc test coverage directory
+.nyc_output
