@@ -1,28 +1,27 @@
-import { Router } from 'express';
-
-const router = Router();
-
-import { buildClient } from "../../modules/utils";
-
+import { Router } from "express";
 import { decodeJwt } from "jose";
+import Long from "long";
+import * as stytch from "stytch";
 
 import { instantiate2Address } from "@cosmjs/cosmwasm-stargate";
-import { coin } from "@cosmjs/stargate";
-import { burntChainInfo } from "../../modules/chain-info";
+import { sha256 } from "@cosmjs/crypto";
+import { GasPrice } from "@cosmjs/stargate";
+import { sleep } from "@cosmjs/utils";
 
+import { buildClient } from "../../modules/utils";
+import { burntChainInfo } from "../../modules/chain-info";
 import { AAClient } from "../../modules/client";
 import { MsgRegisterAccount } from "../../interfaces/generated/abstractaccount/v1/tx";
-
-import * as stytch from "stytch";
-import { sleep } from "@cosmjs/utils";
-import { sha256 } from "@cosmjs/crypto";
-import { authStytch } from "../../modules/auth-stych";
-import Long from "long";
-import config from '../../config';
+import { config } from "../../app";
 
 interface IRequestBody {
   salt: string;
+  session_jwt: string;
+  session_token: string;
 }
+
+const router = Router();
+const encoder = new TextEncoder();
 
 // Initialize Stytch client
 const stytchClient = new stytch.Client({
@@ -31,21 +30,31 @@ const stytchClient = new stytch.Client({
   env: config.stytchAPIUrl,
 });
 
-const encoder = new TextEncoder();
-
-router.post("instantiateContractJwt", async (req, res) => {
+router.post("/create", async (req, res) => {
   try {
-    const checksum = config.checksum;
-    const codeId = config.codeId;
-    const privateKey = config.privateKey
+    const { salt, session_token } = req.body as IRequestBody;
 
-    if (!checksum || !codeId || !privateKey) {
+    if (!salt) {
       return res.status(400).json({
-        error: "Missing environment variables",
+        error: "Missing salt",
       });
     }
 
-    const { salt } = req.body as IRequestBody;
+    if (!session_token) {
+      return res.status(400).json({
+        error: "Missing session_token",
+      });
+    }
+
+    const checksum = config.checksum;
+    const codeId = config.codeId;
+    const privateKey = config.privateKey;
+
+    if (!checksum || !codeId || !privateKey) {
+      return res.status(500).json({
+        error: "Missing environment variables",
+      });
+    }
 
     const [signingCosmWasmClient, accountData, signer, signArb] =
       await buildClient(privateKey);
@@ -64,12 +73,9 @@ router.post("instantiateContractJwt", async (req, res) => {
       "xion"
     );
 
-    const session = await authStytch(); // assuming authStytch is imported or defined
-    const { aud, sub } = await decodeJwt(session.session_jwt);
-
     const { session_jwt: signature } = await stytchClient.sessions.authenticate(
       {
-        session_token: session.session_token,
+        session_token: session_token,
         session_duration_minutes: 60 * 24 * 30,
         session_custom_claims: {
           transaction_hash: Buffer.from(sha256(Buffer.from(addy))).toString(
@@ -78,6 +84,7 @@ router.post("instantiateContractJwt", async (req, res) => {
         },
       }
     );
+    const { aud, sub } = decodeJwt(signature);
 
     const initiateContractMsg = {
       id: 0,
@@ -92,27 +99,32 @@ router.post("instantiateContractJwt", async (req, res) => {
 
     const accountClient = await AAClient.connectWithSigner(
       burntChainInfo.rpc,
-      signer
+      signer,
+      {
+        gasPrice: GasPrice.fromString("10uxion"),
+      }
     );
 
     const registerAccountMsg: MsgRegisterAccount = {
       sender: accountData.address,
       codeId: Long.fromNumber(codeId),
       msg: Buffer.from(JSON.stringify(initiateContractMsg)),
-      funds: [coin(1, "uxion")],
-      salt: Buffer.from(salt),
+      funds: [],
+      salt: Buffer.from(encodedSalt),
     };
 
-    await sleep(10000); // This was in your original code
+    const result = await accountClient.registerAbstractAccount(
+      registerAccountMsg
+    );
 
-    const result =
-      await accountClient.registerAbstractAccount(registerAccountMsg);
+    await sleep(1000);
 
-    res.status(200).json({ message: "Account registered", result });
+    return res.status(200).json({ message: "Account registered", result });
   } catch (error) {
-    res.status(500).json({ error: "An error occurred", details: error });
+    return res
+      .status(500)
+      .json({ message: "An error occurred", error: (error as Error).message });
   }
 });
 
-
-export default router;
+module.exports = router;
