@@ -24,7 +24,6 @@ router.post("/generate", async (req, res) => {
       });
     }
 
-    // Authenticate the session using Stytch
     const { session_jwt } = await stytchClient.sessions.authenticate({
       session_token,
       session_duration_minutes: 60 * 24 * 30,
