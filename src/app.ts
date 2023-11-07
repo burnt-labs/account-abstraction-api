@@ -23,6 +23,7 @@ const app: Express = express();
 // Importing routes
 var v1Jwt = require("./api/routes/instantiateContractJwt");
 var v1Arb = require("./api/routes/instantiateContractArb");
+var v1genSessionJwt = require("./api/routes/generateSessionJwt");
 
 // Middlewares
 app.use(cors());
@@ -34,6 +35,7 @@ app.use(
 );
 app.use("/api/v1/jwt-account", v1Jwt);
 app.use("/api/v1/arb-account", v1Arb);
+app.use("/api/v1/session", v1genSessionJwt);
 
 // Run the server
 app.listen(process.env.PORT, () => {
