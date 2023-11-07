@@ -1,19 +1,15 @@
-import { Router } from 'express';
-
-const router = Router();
+import { Router } from "express";
+import Long from "long";
 
 import { instantiate2Address } from "@cosmjs/cosmwasm-stargate";
 import { coin } from "@cosmjs/stargate";
-import Long from "long";
 
-import {
-  buildClient,
-  verifySignature,
-} from "../../modules/utils";
+import { buildClient, verifySignature } from "../../modules/utils";
 import { burntChainInfo } from "../../modules/chain-info";
 import { AAClient } from "../../modules/client";
-import config from '../../config';
+import { config } from "../../app";
 
+const router = Router();
 const encoder = new TextEncoder();
 
 interface IRequestBody {
@@ -21,21 +17,30 @@ interface IRequestBody {
   salt: string;
 }
 
-router.post("instantiateContractArb", async (req, res) => {
+router.post("/create", async (req, res) => {
   try {
+    const { signArbSig, salt } = req.body as IRequestBody;
+
+    if (!signArbSig) {
+      throw new Error("Missing signArbSig");
+    }
+
+    if (!salt) {
+      throw new Error("Missing salt");
+    }
+
     const checksum = config.checksum;
     const codeId = config.codeId;
-    const privateKey = config.privateKey
+    const privateKey = config.privateKey;
 
     if (!checksum || !codeId || !privateKey) {
-      return res.status(400).json({
+      return res.status(500).json({
         error: "Missing environment variables",
       });
     }
 
     const [signingCosmWasmClient, accountData, signer, signArb] =
       await buildClient(privateKey);
-    const { signArbSig, salt } = req.body as IRequestBody;
 
     const encodedSalt = encoder.encode(req.body.salt);
     let byteArray = new Uint8Array(32);
@@ -84,17 +89,17 @@ router.post("instantiateContractArb", async (req, res) => {
       salt: Buffer.from(salt),
     };
 
-    const result =
-      await accountClient.registerAbstractAccount(registerAccountMsg);
+    const result = await accountClient.registerAbstractAccount(
+      registerAccountMsg
+    );
 
-    res.status(200).json({ message: "Account registered", result });
+    return res.status(200).json({ message: "Account registered", result });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "An error occurred.",
       details: error,
     });
   }
 });
 
-
-export default router;
+module.exports = router;

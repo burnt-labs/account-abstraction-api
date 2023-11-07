@@ -1,11 +1,43 @@
-import express from 'express';
-import apiRoutes from './api/routes';
-import config from './config';
+import express, { Express } from "express";
+import bodyParser from "body-parser";
+import dotenv from "dotenv";
+import cors from "cors";
 
-const app = express();
+// Configuring env vars
+dotenv.config();
 
-app.use(express.json());
+// Project Config
+export const config = {
+  port: Number(process.env.PORT),
+  checksum: process.env.CHECKSUM,
+  codeId: Number(process.env.CODE_ID),
+  privateKey: process.env.PRIVATE_KEY,
+  stytchProjectId: process.env.STYTCH_PROJECT_ID,
+  stytchSecret: process.env.STYTCH_SECRET,
+  stytchAPIUrl: process.env.STYTCH_API_URL,
+};
 
-app.use(config.apiPrefix, apiRoutes);
+// Basic express setup
+const app: Express = express();
 
-export default app;
+// Importing routes
+var v1Jwt = require("./api/routes/instantiateContractJwt");
+var v1Arb = require("./api/routes/instantiateContractArb");
+
+// Middlewares
+app.use(cors());
+app.use(bodyParser.json());
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
+app.use("/api/v1/jwt-account", v1Jwt);
+app.use("/api/v1/arb-account", v1Arb);
+
+// Run the server
+app.listen(process.env.PORT, () => {
+  console.log(
+    `⚡️[server]: Server is running at http://localhost:${process.env.PORT}`
+  );
+});
