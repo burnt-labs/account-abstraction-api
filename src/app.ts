@@ -2,6 +2,7 @@ import express, { Express } from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import cors from "cors";
+import * as stytch from "stytch";
 
 // Configuring env vars
 dotenv.config();
@@ -17,13 +18,21 @@ export const config = {
   stytchAPIUrl: process.env.STYTCH_API_URL,
 };
 
+// Initialize Stytch client
+export const stytchClient = new stytch.Client({
+  project_id: config.stytchProjectId || "",
+  secret: config.stytchSecret || "",
+  env: config.stytchAPIUrl,
+});
+
 // Basic express setup
 const app: Express = express();
 
 // Importing routes
-var v1Jwt = require("./api/routes/instantiateContractJwt");
-var v1Arb = require("./api/routes/instantiateContractArb");
-var v1genSessionJwt = require("./api/routes/generateSessionJwt");
+var v1JwtAccounts = require("./api/routes/jwt-accounts");
+var v1ArbAccounts = require("./api/routes/arb-accounts");
+var v1Otps = require("./api/routes/otps");
+var v1Sessions = require("./api/routes/sessions");
 
 // Middlewares
 app.use(cors());
@@ -33,9 +42,10 @@ app.use(
     extended: true,
   })
 );
-app.use("/api/v1/jwt-account", v1Jwt);
-app.use("/api/v1/arb-account", v1Arb);
-app.use("/api/v1/session", v1genSessionJwt);
+app.use("/api/v1/jwt-accounts", v1JwtAccounts);
+app.use("/api/v1/arb-accounts", v1ArbAccounts);
+app.use("/api/v1/otps", v1Otps);
+app.use("/api/v1/sessions", v1Sessions);
 
 // Run the server
 app.listen(process.env.PORT, () => {

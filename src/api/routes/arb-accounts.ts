@@ -8,6 +8,7 @@ import { buildClient, verifySignature } from "../../modules/utils";
 import { burntChainInfo } from "../../modules/chain-info";
 import { AAClient } from "../../modules/client";
 import { config } from "../../app";
+import { PropertyRequiredError } from "../../lib/errors";
 
 const router = Router();
 const encoder = new TextEncoder();
@@ -19,14 +20,26 @@ interface IRequestBody {
 
 router.post("/create", async (req, res) => {
   try {
+    let validationErrors = [];
     const { signArbSig, salt } = req.body as IRequestBody;
 
-    if (!signArbSig) {
-      throw new Error("Missing signArbSig");
+    if (!salt) {
+      const error = new PropertyRequiredError("salt");
+      validationErrors.push(error);
     }
 
-    if (!salt) {
-      throw new Error("Missing salt");
+    if (!signArbSig) {
+      const error = new PropertyRequiredError("signArbSig");
+      validationErrors.push(error);
+    }
+
+    if (validationErrors.length >= 1) {
+      return res.status(400).json({
+        error: {
+          message: "Missing Properties",
+          errors: validationErrors,
+        },
+      });
     }
 
     const checksum = config.checksum;
@@ -35,7 +48,10 @@ router.post("/create", async (req, res) => {
 
     if (!checksum || !codeId || !privateKey) {
       return res.status(500).json({
-        error: "Missing environment variables",
+        error: {
+          message: "Internal Server Error",
+          cause: "Missing environment variables",
+        },
       });
     }
 
@@ -93,12 +109,11 @@ router.post("/create", async (req, res) => {
       registerAccountMsg
     );
 
-    return res.status(200).json({ message: "Account registered", result });
+    return res.status(201).json(result);
   } catch (error) {
-    return res.status(500).json({
-      error: "An error occurred.",
-      details: error,
-    });
+    return res
+      .status(500)
+      .json({ error: { message: "Something went wrong", errors: [error] } });
   }
 });
 
