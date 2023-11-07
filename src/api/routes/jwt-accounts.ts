@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { decodeJwt } from "jose";
 import Long from "long";
-import * as stytch from "stytch";
 
 import { instantiate2Address } from "@cosmjs/cosmwasm-stargate";
 import { sha256 } from "@cosmjs/crypto";
@@ -12,7 +11,8 @@ import { buildClient } from "../../modules/utils";
 import { burntChainInfo } from "../../modules/chain-info";
 import { AAClient } from "../../modules/client";
 import { MsgRegisterAccount } from "../../interfaces/generated/abstractaccount/v1/tx";
-import { config } from "../../app";
+import { config, stytchClient } from "../../app";
+import { PropertyRequiredError } from "../../lib/errors";
 
 interface IRequestBody {
   salt: string;
@@ -23,26 +23,27 @@ interface IRequestBody {
 const router = Router();
 const encoder = new TextEncoder();
 
-// Initialize Stytch client
-const stytchClient = new stytch.Client({
-  project_id: config.stytchProjectId || "",
-  secret: config.stytchSecret || "",
-  env: config.stytchAPIUrl,
-});
-
 router.post("/create", async (req, res) => {
   try {
+    let validationErrors = [];
     const { salt, session_token } = req.body as IRequestBody;
 
     if (!salt) {
-      return res.status(400).json({
-        error: "Missing salt",
-      });
+      const error = new PropertyRequiredError("salt");
+      validationErrors.push(error);
     }
 
     if (!session_token) {
+      const error = new PropertyRequiredError("session_token");
+      validationErrors.push(error);
+    }
+
+    if (validationErrors.length >= 1) {
       return res.status(400).json({
-        error: "Missing session_token",
+        error: {
+          message: "Missing Properties",
+          errors: validationErrors,
+        },
       });
     }
 
@@ -52,7 +53,10 @@ router.post("/create", async (req, res) => {
 
     if (!checksum || !codeId || !privateKey) {
       return res.status(500).json({
-        error: "Missing environment variables",
+        error: {
+          message: "Internal Server Error",
+          cause: "Missing environment variables",
+        },
       });
     }
 
@@ -119,11 +123,14 @@ router.post("/create", async (req, res) => {
 
     await sleep(1000);
 
-    return res.status(200).json({ message: "Account registered", result });
+    return res.status(201).json(result);
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "An error occurred", error: (error as Error).message });
+    return res.status(500).json({
+      error: {
+        message: "Something went wrong",
+        errors: [error],
+      },
+    });
   }
 });
 
