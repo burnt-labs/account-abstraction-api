@@ -128,7 +128,7 @@ router.post("/create", async (req, res) => {
     return res.status(500).json({
       error: {
         message: "Something went wrong",
-        errors: [error],
+        errors: [{ message: (error as Error).message }],
       },
     });
   }
