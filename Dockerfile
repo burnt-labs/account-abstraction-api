@@ -18,6 +18,7 @@ FROM node:lts-alpine AS release
   COPY --from=build /app .
   RUN set -eux \
     && apk add --no-cache --virtual .build-deps \
+      bash \
       curl \
       tini \
     && addgroup -S burnt && adduser -S burnt -G burnt \
