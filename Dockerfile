@@ -7,7 +7,6 @@ FROM node:lts-alpine as base
 
 # ---- Build ----
 FROM base AS build
-  ENV NEXT_TELEMETRY_DISABLED 1
   COPY . .
   RUN set -eux \
     && npm run build
@@ -17,5 +16,11 @@ FROM node:lts-alpine AS release
   # Install pnpm
   WORKDIR /app
   COPY --from=build /app .
-  # At this point, the app is built and ready to run
+  RUN set -eux \
+    && apk add --no-cache --virtual .build-deps \
+      curl \
+      tini \
+    && addgroup -S burnt && adduser -S burnt -G burnt \
+    && chown -R burnt:burnt /app
+  USER burnt
   CMD ["npm", "start"]
