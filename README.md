@@ -65,12 +65,10 @@ This will compile the TypeScript code into JavaScript and place it in the dist d
 
 The application uses the following environment variables:
 
-- `PORT`: Port where the application runs.
 - `CHECKSUM`: Used to ensure data validity.
 - `CODE_ID`: ID for verifying smart contract.
+- `PORT`: Port where the application runs.
 - `PRIVATE_KEY`: String for encrypting data.
+- `STYTCH_API_URL`: Base URL for Stytch API.
 - `STYTCH_PROJECT_ID`: ID for Stytch project.
 - `STYTCH_SECRET`: Secret token to authenticate Stytch requests.
-- `STYTCH_API_URL`: Base URL for Stytch API.
-
-
