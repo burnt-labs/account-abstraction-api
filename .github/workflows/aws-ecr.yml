@@ -39,7 +39,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: 385156030167.dkr.ecr.us-east-1.amazonaws.com/burnt/account-abstraction-api
+          images: 385156030167.dkr.ecr.us-east-1.amazonaws.com/burnt/aa-api
           tags: |
             type=semver,pattern={{version}},priority=1000
             type=sha,priority=700
