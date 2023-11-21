@@ -105,7 +105,7 @@ router.post("/create", async (req, res) => {
       burntChainInfo.rpc,
       signer,
       {
-        gasPrice: GasPrice.fromString("10uxion"),
+        gasPrice: GasPrice.fromString("0uxion"),
       }
     );
 
