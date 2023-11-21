@@ -33,6 +33,7 @@ var v1Healthz = require("./api/routes/healthz");
 var v1JwtAccounts = require("./api/routes/jwt-accounts");
 var v1ArbAccounts = require("./api/routes/arb-accounts");
 var v1Otps = require("./api/routes/otps");
+var v1Webauthn = require("./api/routes/webauthn");
 var v1Sessions = require("./api/routes/sessions");
 
 // Middlewares
@@ -47,6 +48,7 @@ app.use("/api/v1/healthz", v1Healthz);
 app.use("/api/v1/jwt-accounts", v1JwtAccounts);
 app.use("/api/v1/arb-accounts", v1ArbAccounts);
 app.use("/api/v1/otps", v1Otps);
+app.use("/api/v1/webauthn", v1Webauthn);
 app.use("/api/v1/sessions", v1Sessions);
 
 // Run the server
