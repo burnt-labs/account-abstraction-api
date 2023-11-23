@@ -3,3 +3,8 @@ namespace: aa-api
 
 resources:
   - deployment.yaml
+
+configMapGenerator:
+  - name: aa-api
+    files:
+      - configmaps/start.sh
