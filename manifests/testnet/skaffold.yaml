@@ -1,0 +1,12 @@
+---
+apiVersion: skaffold/v4beta2
+kind: Config
+
+manifests:
+  kustomize:
+    paths:
+      - .
+
+deploy:
+  kubectl:
+    defaultNamespace: aa-api

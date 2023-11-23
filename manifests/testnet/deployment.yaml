@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aa-api
+  labels:
+    app: aa-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aa-api
+  template:
+    metadata:
+      labels:
+        app: aa-api
+    spec:
+      serviceAccountName: aa-api
+      nodeSelector:
+        burnt.com/service: public
+      containers:
+        - name: aa-api
+          image: 385156030167.dkr.ecr.us-east-1.amazonaws.com/burnt/aa-api:${IMAGE_TAG}
+          command:
+            - /sbin/tini
+            - --
+            - bash
+            - -c
+            - /tmp/configmaps/start.sh
+          env:
+            - name: CODE_ID
+              value: "21"
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: STYTCH_API_URL
+              value: https://api.stytch.com/v1/
+          envFrom:
+            - secretRef:
+                name: aa-api
+          resources:
+            requests: {}
+          volumeMounts:
+            - mountPath: /tmp/configmaps
+              name: configmaps
+      tolerations:
+        - key: burnt.com/service
+          operator: Equal
+          value: public
+          effect: NoSchedule
+      volumes:
+        - name: configmaps
+          configMap:
+            name: aa-api
+            defaultMode: 0777

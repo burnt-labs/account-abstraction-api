@@ -1,0 +1,5 @@
+---
+namespace: aa-api
+
+resources:
+  - deployment.yaml
