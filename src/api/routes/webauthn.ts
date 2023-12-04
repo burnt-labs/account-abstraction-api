@@ -4,7 +4,7 @@ import { PropertyRequiredError } from "../../lib/errors";
 
 const router = Router();
 
-router.post("/register-start", async (req, res) => {
+router.post("/register/start", async (req, res) => {
   let validationErrors = [];
   const { user_id, domain } = req.body;
   if (!user_id) {
@@ -75,7 +75,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.post("/authenticate-start", async (req, res) => {
+router.post("/authenticate/start", async (req, res) => {
   let validationErrors = [];
   const { domain } = req.body;
   if (!domain) {
