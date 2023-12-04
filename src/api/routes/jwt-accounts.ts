@@ -106,6 +106,7 @@ router.post("/create", async (req, res) => {
       signer,
       {
         gasPrice: GasPrice.fromString("0uxion"),
+        broadcastPollIntervalMs: 1000,
       }
     );
 

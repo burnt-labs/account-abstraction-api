@@ -95,7 +95,10 @@ router.post("/create", async (req, res) => {
 
     const accountClient = await AAClient.connectWithSigner(
       burntChainInfo.rpc,
-      signer
+      signer,
+      {
+          broadcastPollIntervalMs: 1000,
+      }
     );
     const registerAccountMsg = {
       sender: accountData.address,
