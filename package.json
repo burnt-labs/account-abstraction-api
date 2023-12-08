@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node dist/app.js",
     "dev": "nodemon src/app.ts",
+    "test:unit": "jest --verbose --testPathPattern=.*/__tests__/unit_test.*\\.[jt]sx?$",
     "build": "tsc -p ."
   },
   "keywords": [],
@@ -18,16 +19,23 @@
     "@cosmjs/tendermint-rpc": "^0.31.3",
     "@keplr-wallet/cosmos": "^0.12.39",
     "@keplr-wallet/crypto": "^0.12.39",
+    "@types/jest": "^29.5.11",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "jose": "^5.1.0",
+    "rwlock": "^5.0.0",
     "stytch": "^9.0.6"
   },
   "devDependencies": {
+    "@babel/core": "^7.22.11",
+    "@babel/preset-env": "^7.22.14",
+    "@babel/preset-typescript": "^7.22.11",
     "@types/cors": "^2.8.15",
     "@types/express": "^4.17.20",
     "@types/node": "^20.8.10",
+    "@types/rwlock": "^5.0.6",
+    "jest": "^29.7.0",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"

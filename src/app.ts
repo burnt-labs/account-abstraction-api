@@ -3,6 +3,8 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import cors from "cors";
 import * as stytch from "stytch";
+import RWLock from "rwlock";
+import { buildClient } from "./modules/utils";
 
 // Configuring env vars
 dotenv.config();
@@ -50,8 +52,22 @@ app.use("/api/v1/otps", v1Otps);
 app.use("/api/v1/sessions", v1Sessions);
 
 // Run the server
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT, async () => {
   console.log(
     `⚡️[server]: Server is running at http://localhost:${process.env.PORT}`
   );
+  const [client, signer] = await buildClient(config.privateKey || "");
+  const account = await client.getAccount(signer.address);
+  if (!account) {
+    throw new Error(
+      `Account '${signer.address}' does not exist on chain. Send some tokens there before trying to query sequence.`
+    );
+  }
+  const lock = new RWLock();
+  lock.writeLock("writeSequence", (release) => {
+    // @ts-ignore - typescript doesn't know about globalThis
+    // we set the sequence number on startup and read from here when we need it
+    globalThis["sequenceNumber"] = account.sequence;
+    release();
+  });
 });

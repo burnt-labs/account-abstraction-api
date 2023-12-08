@@ -2,6 +2,7 @@ import { GeneratedType, Registry, OfflineSigner } from "@cosmjs/proto-signing";
 import {
   defaultRegistryTypes,
   DeliverTxResponse,
+  SequenceResponse,
   SigningStargateClient,
   SigningStargateClientOptions,
 } from "@cosmjs/stargate";
@@ -13,6 +14,7 @@ import {
   typeUrlMsgRegisterAccount,
 } from "./messages";
 import { customAccountFromAny } from "./utils";
+import RWLock from "rwlock";
 
 export const AADefaultRegistryTypes: ReadonlyArray<[string, GeneratedType]> = [
   ...defaultRegistryTypes,
@@ -44,6 +46,32 @@ export class AAClient extends SigningStargateClient {
   ) {
     super(tmClient, signer, options);
   }
+
+  public async getSequence(address: string): Promise<SequenceResponse> {
+    const account = await this.getAccount(address);
+    if (!account) {
+      throw new Error(
+        `Account '${address}' does not exist on chain. Send some tokens there before trying to query sequence.`
+      );
+    }
+    let sequence = 0;
+    const lock = new RWLock();
+    lock.readLock("readSequence", (release) => {
+      // @ts-ignore
+      sequence = globalThis.sequenceNumber;
+      lock.writeLock("writeSequence", (release) => {
+        // @ts-ignore
+        globalThis.sequenceNumber += 1;
+        release();
+      });
+      release();
+    });
+    return {
+      accountNumber: account.accountNumber,
+      sequence,
+    };
+  }
+
   public async registerAbstractAccount(
     msg: MsgRegisterAccount
   ): Promise<DeliverTxResponse> {

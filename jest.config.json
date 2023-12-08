@@ -1,0 +1,9 @@
+{
+  "moduleFileExtensions": ["ts", "js"],
+  "coveragePathIgnorePatterns": ["/node_modules/", "/dist/"],
+  "testPathIgnorePatterns": ["/node_modules/", "/dist/"],
+  "testMatch": ["**/__tests__/**"],
+  "testEnvironment": "node",
+  "verbose": true,
+  "testTimeout": 100000
+}
