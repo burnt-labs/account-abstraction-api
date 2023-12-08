@@ -42,8 +42,8 @@ describe("make sure no race condition in sequence number", () => {
       release();
     });
 
-    const requestArray = [1, 2, 3, 4];
-    const requests = [1, 2, 3, 4].map(() => client.getSequence(signer.address));
+    const requestArray = Array.from(Array(20).keys());
+    const requests = requestArray.map(() => client.getSequence(signer.address));
     const result = await Promise.all(requests);
 
     const seenSequences = new Map<number, boolean>();
@@ -54,7 +54,6 @@ describe("make sure no race condition in sequence number", () => {
       expect(seenSequences.get(sequence)).toBeUndefined();
       seenSequences.set(sequence, true);
       expect(sequence).toBeLessThanOrEqual(maxSequence);
-      console.log(sequence);
     });
   });
 });
