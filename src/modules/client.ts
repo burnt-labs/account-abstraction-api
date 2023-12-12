@@ -25,19 +25,18 @@ function createDefaultRegistry(): Registry {
 }
 
 export class AAClient extends SigningStargateClient {
-  protected accountNumber ;
-  protected sequence ;
+  protected accountNumber;
+  protected sequence;
 
   public static async connectWithSigner(
     endpoint: string,
     signer: OfflineSigner,
-    options: SigningStargateClientOptions  & {
-      sequence?: number,
-      accountNumber?: number,
+    options: SigningStargateClientOptions & {
+      sequence?: number;
+      accountNumber?: number;
     } = {}
   ): Promise<AAClient> {
     const tmClient = await Tendermint37Client.connect(endpoint);
-    console.log(options.sequence);
 
     return new AAClient(tmClient, signer, {
       registry: createDefaultRegistry(),
@@ -53,26 +52,26 @@ export class AAClient extends SigningStargateClient {
       accountNumber,
       sequence,
       ...options
-    } :SigningStargateClientOptions & {
-      sequence?: number,
-      accountNumber?: number,
-      }
+    }: SigningStargateClientOptions & {
+      sequence?: number;
+      accountNumber?: number;
+    }
   ) {
     super(tmClient, signer, options);
-    if(sequence) {
+    if (sequence) {
       this.sequence = sequence;
     }
-    if(accountNumber) {
+    if (accountNumber) {
       this.accountNumber = accountNumber;
     }
   }
 
   public async getSequence(address: string): Promise<SequenceResponse> {
     // If we have the sequence and account number, we can return it directly to avoid a query
-    if(this.sequence && this.accountNumber) {
+    if (this.sequence && this.accountNumber) {
       return {
         accountNumber: this.accountNumber,
-        sequence: this.sequence
+        sequence: this.sequence,
       };
     }
 
@@ -99,7 +98,7 @@ export class AAClient extends SigningStargateClient {
     };
     // Hardcode fee to avoid a simulate call
     return this.signAndBroadcastSync(sender, [createMsg], {
-      amount: [{ denom: "uxion‘", amount: "0" }],
+      amount: [{ denom: "uxion", amount: "0" }],
       gas: "343093",
     });
   }

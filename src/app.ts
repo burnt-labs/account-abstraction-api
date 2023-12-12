@@ -1,10 +1,10 @@
-import express, {Express} from "express";
+import express, { Express } from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import cors from "cors";
 import * as stytch from "stytch";
-import {buildClient} from "./modules/utils";
-import {resetSequenceNumber} from "./lib/sequence-number-generator";
+import { buildClient } from "./modules/utils";
+import { resetSequenceNumber } from "./lib/sequence-number-generator";
 
 // Configuring env vars
 dotenv.config();
@@ -52,7 +52,7 @@ app.use("/api/v1/otps", v1Otps);
 app.use("/api/v1/sessions", v1Sessions);
 
 // Run the server
-app.listen(process.env.PORT, async () => {
+export const httpClient = app.listen(process.env.PORT, async () => {
   console.log(
     `⚡️[server]: Server is running at http://localhost:${process.env.PORT}`
   );
@@ -64,7 +64,5 @@ app.listen(process.env.PORT, async () => {
     );
   }
 
-  console.log(`⚡️[server]: Account number: ${account.accountNumber}`);
-  console.log(`⚡️[server]: Sequence: ${account.sequence}`);
   resetSequenceNumber(account.sequence, account.accountNumber);
 });

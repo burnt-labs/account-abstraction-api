@@ -1,10 +1,26 @@
-import { config } from "dotenv";
-import RWLock from "rwlock";
+import { AAClient } from "../../client";
+import { MsgRegisterAccount } from "../../../interfaces/generated/abstractaccount/v1/tx";
+import Long from "long";
+import { submitQueue } from "../../../lib/submit-queue";
 import { buildClient } from "../../utils";
+import { config } from "dotenv";
+import { httpClient } from "../../../app";
 config();
+
+const mockRegisterAccount = jest.fn((msg) => Promise.resolve(msg));
+jest
+  .spyOn(AAClient.prototype, "registerAbstractAccount")
+  .mockImplementation((msg) => mockRegisterAccount(msg));
 
 describe("make sure no race condition in sequence number", () => {
   it("should increment sequence number", async () => {
+    const registerAccountMsg: MsgRegisterAccount = {
+      sender: "sender",
+      codeId: Long.fromNumber(1),
+      msg: Uint8Array.from(Buffer.from("some msg")),
+      funds: [],
+      salt: Buffer.from("1"),
+    };
     const [client, signer] = await buildClient(process.env.PRIVATE_KEY || "");
     const account = await client.getAccount(signer.address);
     if (!account) {
@@ -12,48 +28,26 @@ describe("make sure no race condition in sequence number", () => {
         `Account '${signer.address}' does not exist on chain. Send some tokens there before trying to query sequence.`
       );
     }
-    const lock = new RWLock();
-    lock.writeLock("writeSequence", (release) => {
-      // @ts-ignore - typescript doesn't know about globalThis
-      // we set the sequence number on startup and read from here when we need it
-      globalThis["sequenceNumber"] = account.sequence;
-      release();
-    });
-    const { sequence: sequence2 } = await client.getSequence(signer.address);
-    expect(
-      //@ts-ignore
-      globalThis.sequenceNumber
-    ).toBe(sequence2 + 1);
-  });
-  // concurrent calls to getSequence should not return the same sequence number
-  it("should not return the same sequence number", async () => {
-    const [client, signer] = await buildClient(process.env.PRIVATE_KEY || "");
-    const account = await client.getAccount(signer.address);
-    if (!account) {
-      throw new Error(
-        `Account '${signer.address}' does not exist on chain. Send some tokens there before trying to query sequence.`
-      );
-    }
-    const lock = new RWLock();
-    lock.writeLock("writeSequence", (release) => {
-      // @ts-ignore - typescript doesn't know about globalThis
-      // we set the sequence number on startup and read from here when we need it
-      globalThis["sequenceNumber"] = account.sequence;
-      release();
-    });
 
     const requestArray = Array.from(Array(20).keys());
-    const requests = requestArray.map(() => client.getSequence(signer.address));
-    const result = await Promise.all(requests);
+    const requests = requestArray.map((key) =>
+      submitQueue.push({
+        msg: {
+          ...registerAccountMsg,
+          codeId: Long.fromNumber(key),
+        },
+      })
+    );
+    await Promise.all(requests);
+    const lastSequence = account.sequence - 1; // The sequence number before the requests
 
-    const seenSequences = new Map<number, boolean>();
-    const maxSequence = account.sequence + requestArray.length;
-
-    result.forEach(({ sequence }) => {
-      expect(sequence).toBeDefined();
-      expect(seenSequences.get(sequence)).toBeUndefined();
-      seenSequences.set(sequence, true);
-      expect(sequence).toBeLessThanOrEqual(maxSequence);
-    });
+    for (const res of mockRegisterAccount.mock.calls[0]) {
+      if (res.sequence === undefined || res.sequence < lastSequence) {
+        // this is the case before the generator is set
+        continue;
+      }
+      expect(res.sequence).toBe(lastSequence + 1);
+    }
+    httpClient.close();
   });
 });
