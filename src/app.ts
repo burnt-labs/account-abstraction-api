@@ -1,10 +1,10 @@
-import express, { Express } from "express";
+import express, {Express} from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import cors from "cors";
 import * as stytch from "stytch";
-import RWLock from "rwlock";
-import { buildClient } from "./modules/utils";
+import {buildClient} from "./modules/utils";
+import {resetSequenceNumber} from "./lib/sequence-number-generator";
 
 // Configuring env vars
 dotenv.config();
@@ -63,11 +63,8 @@ app.listen(process.env.PORT, async () => {
       `Account '${signer.address}' does not exist on chain. Send some tokens there before trying to query sequence.`
     );
   }
-  const lock = new RWLock();
-  lock.writeLock("writeSequence", (release) => {
-    // @ts-ignore - typescript doesn't know about globalThis
-    // we set the sequence number on startup and read from here when we need it
-    globalThis["sequenceNumber"] = account.sequence;
-    release();
-  });
+
+  console.log(`⚡️[server]: Account number: ${account.accountNumber}`);
+  console.log(`⚡️[server]: Sequence: ${account.sequence}`);
+  resetSequenceNumber(account.sequence, account.accountNumber);
 });
