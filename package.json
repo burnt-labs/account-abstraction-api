@@ -5,7 +5,7 @@
   "main": "src/app.ts",
   "scripts": {
     "start": "node dist/app.js",
-    "dev": "nodemon src/app.ts",
+    "dev": "dotenv -- nodemon src/app.ts",
     "test:unit": "jest --verbose --testPathPattern=.*/__tests__/unit_test.*\\.[jt]sx?$",
     "build": "tsc -p ."
   },
