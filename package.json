@@ -13,10 +13,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@cosmjs/cosmwasm-stargate": "^0.31.3",
+    "@cosmjs/cosmwasm-stargate": "^0.32.1",
     "@cosmjs/proto-signing": "^0.31.3",
-    "@cosmjs/stargate": "^0.31.3",
-    "@cosmjs/tendermint-rpc": "^0.31.3",
+    "@cosmjs/stargate": "^0.32.1",
+    "@cosmjs/tendermint-rpc": "^0.32.1",
     "@keplr-wallet/cosmos": "^0.12.39",
     "@keplr-wallet/crypto": "^0.12.39",
     "@types/jest": "^29.5.11",
