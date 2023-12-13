@@ -4,16 +4,12 @@ import Long from "long";
 
 import { instantiate2Address } from "@cosmjs/cosmwasm-stargate";
 import { sha256 } from "@cosmjs/crypto";
-import { GasPrice } from "@cosmjs/stargate";
-import { sleep } from "@cosmjs/utils";
 
 import { buildClient } from "../../modules/utils";
-import { burntChainInfo } from "../../modules/chain-info";
-import { AAClient } from "../../modules/client";
 import { MsgRegisterAccount } from "../../interfaces/generated/abstractaccount/v1/tx";
 import { config, stytchClient } from "../../app";
 import { PropertyRequiredError } from "../../lib/errors";
-
+import { submitQueue } from "../../lib/submit-queue";
 interface IRequestBody {
   salt: string;
   session_jwt: string;
@@ -101,15 +97,6 @@ router.post("/create", async (req, res) => {
       signature: Buffer.from(signature).toString("base64"),
     };
 
-    const accountClient = await AAClient.connectWithSigner(
-      burntChainInfo.rpc,
-      signer,
-      {
-        gasPrice: GasPrice.fromString("0uxion"),
-        broadcastPollIntervalMs: 1000,
-      }
-    );
-
     const registerAccountMsg: MsgRegisterAccount = {
       sender: accountData.address,
       codeId: Long.fromNumber(codeId),
@@ -118,13 +105,10 @@ router.post("/create", async (req, res) => {
       salt: Buffer.from(encodedSalt),
     };
 
-    const result = await accountClient.registerAbstractAccount(
-      registerAccountMsg
-    );
-
-    await sleep(1000);
-
-    return res.status(201).json(result);
+    const result = await submitQueue.push({ msg: registerAccountMsg });
+    return res.status(201).json({
+      transactionHash: result
+    });
   } catch (error) {
     return res.status(500).json({
       error: {

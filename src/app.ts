@@ -3,6 +3,8 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import cors from "cors";
 import * as stytch from "stytch";
+import { buildClient } from "./modules/utils";
+import { resetSequenceNumber } from "./lib/sequence-number-generator";
 
 // Configuring env vars
 dotenv.config();
@@ -50,8 +52,17 @@ app.use("/api/v1/otps", v1Otps);
 app.use("/api/v1/sessions", v1Sessions);
 
 // Run the server
-app.listen(process.env.PORT, () => {
+export const httpClient = app.listen(process.env.PORT, async () => {
   console.log(
     `⚡️[server]: Server is running at http://localhost:${process.env.PORT}`
   );
+  const [client, signer] = await buildClient(config.privateKey || "");
+  const account = await client.getAccount(signer.address);
+  if (!account) {
+    throw new Error(
+      `Account '${signer.address}' does not exist on chain. Send some tokens there before trying to query sequence.`
+    );
+  }
+
+  resetSequenceNumber(account.sequence, account.accountNumber);
 });
