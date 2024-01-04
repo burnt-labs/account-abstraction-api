@@ -2,7 +2,7 @@
 namespace: aa-api
 
 resources:
-  - deployment.yaml
+  - statefulset.yaml
 
 configMapGenerator:
   - name: aa-api

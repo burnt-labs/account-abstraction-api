@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - froch/hdwallet
   workflow_dispatch:
 
 jobs:
@@ -89,8 +90,8 @@ jobs:
           set -euxo pipefail
           
           export IMAGE_TAG=sha-$(git rev-parse --short HEAD); \
-          envsubst < ./manifests/testnet/deployment.yaml > ./manifests/testnet/deployment.temp.yaml; \
-          cp ./manifests/testnet/deployment.yaml ./manifests/testnet/deployment.orig.yaml; \
-          mv ./manifests/testnet/deployment.temp.yaml ./manifests/testnet/deployment.yaml; \
+          envsubst < ./manifests/testnet/statefulset.yaml > ./manifests/testnet/statefulset.temp.yaml; \
+          cp ./manifests/testnet/statefulset.yaml ./manifests/testnet/statefulset.orig.yaml; \
+          mv ./manifests/testnet/statefulset.temp.yaml ./manifests/testnet/statefulset.yaml; \
           pushd ./manifests/testnet; skaffold deploy; popd; \
-          mv ./manifests/testnet/deployment.orig.yaml ./manifests/testnet/deployment.yaml;
+          mv ./manifests/testnet/statefulset.orig.yaml ./manifests/testnet/statefulset.yaml;

@@ -1,11 +1,12 @@
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: aa-api
   labels:
     app: aa-api
 spec:
+  serviceName: aa-api
   replicas: 1
   selector:
     matchLabels:
@@ -39,6 +40,8 @@ spec:
           envFrom:
             - secretRef:
                 name: aa-api
+            - secretRef:
+                name: aa-mnemonics
           resources:
             requests: {}
           volumeMounts:
