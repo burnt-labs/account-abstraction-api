@@ -4,7 +4,7 @@ import Long from "long";
 
 import { instantiate2Address } from "@cosmjs/cosmwasm-stargate";
 import { sha256 } from "@cosmjs/crypto";
-
+import logger from '../../lib/logger';
 import { buildClient } from "../../modules/utils";
 import { MsgRegisterAccount } from "../../interfaces/generated/abstractaccount/v1/tx";
 import { config, stytchClient } from "../../app";
@@ -35,11 +35,13 @@ router.post("/create", async (req, res) => {
     }
 
     if (validationErrors.length >= 1) {
+      const err = {
+        message: "Missing Properties",
+        errors: validationErrors,
+      }
+      logger.error(err)
       return res.status(400).json({
-        error: {
-          message: "Missing Properties",
-          errors: validationErrors,
-        },
+        error: err
       });
     }
 
@@ -48,11 +50,13 @@ router.post("/create", async (req, res) => {
     const privateKey = config.privateKey;
 
     if (!checksum || !codeId || !privateKey) {
+      const err = {
+        message: "Internal Server Error",
+        cause: "Missing environment variables",
+      }
+      logger.error(err)
       return res.status(500).json({
-        error: {
-          message: "Internal Server Error",
-          cause: "Missing environment variables",
-        },
+        error: err,
       });
     }
 
@@ -110,11 +114,13 @@ router.post("/create", async (req, res) => {
       transactionHash: result
     });
   } catch (error) {
+    const err = {
+      message: "Something went wrong",
+      errors: [{ message: (error as Error).message }],
+    }
+    logger.error(err)
     return res.status(500).json({
-      error: {
-        message: "Something went wrong",
-        errors: [{ message: (error as Error).message }],
-      },
+      error: err,
     });
   }
 });
