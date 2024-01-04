@@ -15,6 +15,7 @@ export const config = {
   checksum: process.env.CHECKSUM,
   codeId: Number(process.env.CODE_ID),
   privateKey: process.env.PRIVATE_KEY,
+  mnemonic: process.env.MNEMONIC,
   stytchProjectId: process.env.STYTCH_PROJECT_ID,
   stytchSecret: process.env.STYTCH_SECRET,
   stytchAPIUrl: process.env.STYTCH_API_URL,
