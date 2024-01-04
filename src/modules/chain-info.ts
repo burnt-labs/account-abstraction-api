@@ -30,7 +30,6 @@ export const testnetChainInfo = {
   currencies: [xionCoin],
   feeCurrencies: [xionCoin],
   features: ["cosmwasm"],
-  hdPath: "m/44'/118'/0'/0/0",
 };
 
 export const testChainInfo = {
@@ -54,7 +53,6 @@ export const testChainInfo = {
   currencies: [xionCoin],
   feeCurrencies: [xionCoin],
   features: ["cosmwasm"],
-  hdPath: "m/44'/118'/0'/0/0",
 };
 
 export const burntChainInfo =
