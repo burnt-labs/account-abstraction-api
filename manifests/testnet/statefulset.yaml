@@ -41,7 +41,7 @@ spec:
             - secretRef:
                 name: aa-api
             - secretRef:
-                name: aa-mnemonics
+                name: aa-pkeys
           resources:
             requests: {}
           volumeMounts:

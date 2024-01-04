@@ -10,12 +10,6 @@ else
     echo "Could not determine the ordinal number."
 fi
 
-export varname="MNEMONIC_$ORDINAL"
-if [ -z "$varname" ]; then
-    echo "Env var $varname is not set."
-else
-    echo "Env var $varname is set."
-fi
-
+varname="PKEY_$ORDINAL"
 #/bin/sleep infinity
-npm run start
+export PRIVATE_KEY="${!varname}" && npm run start
