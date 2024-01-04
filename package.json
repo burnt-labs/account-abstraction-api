@@ -25,7 +25,8 @@
     "express": "^4.18.2",
     "fastq": "^1.15.0",
     "jose": "^5.1.0",
-    "stytch": "^9.0.6"
+    "stytch": "^9.0.6",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.11",

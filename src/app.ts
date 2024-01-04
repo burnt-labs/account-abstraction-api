@@ -1,4 +1,5 @@
-import express, { Express } from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
+import {createLogger, format, transports} from "winston";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -29,6 +30,30 @@ export const stytchClient = new stytch.Client({
 
 // Basic express setup
 const app: Express = express();
+const logger = createLogger({
+  level: 'info',
+  format: format.combine(
+      format.timestamp(),
+      format.json()
+  ),
+  transports: [
+    new transports.Console()
+  ]
+});
+
+// Request logging middleware
+function logRequest(req: Request, res: Response, next: NextFunction) {
+  logger.info(`Request: ${req.method} ${req.url}`);
+  next();
+}
+app.use(logRequest);
+
+// Error logging middleware
+function logError(err: Error, req: Request, res: Response, next: NextFunction) {
+  logger.error(`Error: ${err.message}`);
+  next(err);
+}
+app.use(logError);
 
 // Importing routes
 var v1Healthz = require("./api/routes/healthz");
@@ -53,9 +78,8 @@ app.use("/api/v1/sessions", v1Sessions);
 
 // Run the server
 export const httpClient = app.listen(process.env.PORT, async () => {
-  console.log(
-    `⚡️[server]: Server is running at http://localhost:${process.env.PORT}`
-  );
+  logger.info(`⚡️Server is running at http://localhost:${config.port}`);
+
   const [client, signer] = await buildClient(config.privateKey || "");
   const account = await client.getAccount(signer.address);
   if (!account) {
