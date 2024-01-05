@@ -3,6 +3,7 @@ import { Router } from "express";
 import * as stytch from "stytch";
 
 import { config } from "../../app";
+import logger from "../../lib/logger";
 
 const router = Router();
 
@@ -19,9 +20,11 @@ router.post("/generate", async (req, res) => {
 
     // Validate the input
     if (!session_token || !transaction_hash) {
-      return res.status(400).json({
+      const err = {
         error: "Missing session_token or transaction_hash",
-      });
+      };
+      logger.error(err);
+      return res.status(400).json(err);
     }
 
     const { session_jwt } = await stytchClient.sessions.authenticate({
@@ -34,10 +37,12 @@ router.post("/generate", async (req, res) => {
 
     return res.status(200).json({ session_jwt });
   } catch (error: any) {
-    return res.status(500).json({
+    const err = {
       message: "An error occurred while generating the JWT",
       error: error.message,
-    });
+    }
+    logger.error(err);
+    return res.status(500).json(err);
   }
 });
 

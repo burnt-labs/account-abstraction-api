@@ -9,6 +9,7 @@ import { burntChainInfo } from "../../modules/chain-info";
 import { AAClient } from "../../modules/client";
 import { config } from "../../app";
 import { PropertyRequiredError } from "../../lib/errors";
+import logger from "../../lib/logger";
 
 const router = Router();
 const encoder = new TextEncoder();
@@ -34,11 +35,13 @@ router.post("/create", async (req, res) => {
     }
 
     if (validationErrors.length >= 1) {
+      const err = {
+        message: "Missing Properties",
+        errors: validationErrors,
+      };
+      logger.error(err);
       return res.status(400).json({
-        error: {
-          message: "Missing Properties",
-          errors: validationErrors,
-        },
+        error: err,
       });
     }
 
@@ -47,11 +50,13 @@ router.post("/create", async (req, res) => {
     const privateKey = config.privateKey;
 
     if (!checksum || !codeId || !privateKey) {
+      const err ={
+        message: "Internal Server Error",
+        cause: "Missing environment variables",
+      }
+      logger.error(err);
       return res.status(500).json({
-        error: {
-          message: "Internal Server Error",
-          cause: "Missing environment variables",
-        },
+        error: err,
       });
     }
 
@@ -78,9 +83,11 @@ router.post("/create", async (req, res) => {
 
     const isValid = await verifySignature(message, signArbSig, publicKey);
     if (!isValid) {
-      return res.status(400).json({
+      const err = {
         error: "Invalid signature",
-      });
+      };
+      logger.error(err);
+      return res.status(400).json(err);
     }
 
     const initiateContractMsg = {
@@ -114,11 +121,13 @@ router.post("/create", async (req, res) => {
 
     return res.status(201).json(result);
   } catch (error) {
+    const err = {
+      message: "Something went wrong",
+      errors: [{ message: (error as Error).message }],
+    }
+    logger.error(err);
     return res.status(500).json({
-      error: {
-        message: "Something went wrong",
-        errors: [{ message: (error as Error).message }],
-      },
+      error: err,
     });
   }
 });
