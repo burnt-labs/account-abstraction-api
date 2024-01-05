@@ -1,16 +1,42 @@
 import {Router} from "express";
 import {stytchClient} from "../../app";
 import logger from "../../lib/logger";
+import {PropertyRequiredError} from "../../lib/errors";
 
 const router = Router();
 
 router.post("/authenticate", async (req, res) => {
     const {
         session_token,
-        session_duration_minutes,
         session_jwt,
+        session_duration_minutes,
         session_custom_claims,
     } = req.body;
+
+    let validationErrors = [];
+    if (!session_token && !session_jwt) {
+        const error = new PropertyRequiredError("one of session_token or session_jwt is required");
+        validationErrors.push(error);
+    }
+    if (!session_duration_minutes) {
+        const error = new PropertyRequiredError("session_duration_minutes");
+        validationErrors.push(error);
+    }
+    if (!session_custom_claims) {
+        const error = new PropertyRequiredError("session_custom_claims");
+        validationErrors.push(error);
+    }
+
+    if (validationErrors.length >= 1) {
+        const err = {
+            message: "Missing Properties",
+            errors: validationErrors,
+        }
+        logger.error(err)
+        return res.status(400).json({
+            error: err
+        });
+    }
 
     /*
     "error_type":"too_many_session_arguments",
