@@ -36,7 +36,7 @@ spec:
             - name: PORT
               value: "3000"
             - name: STYTCH_API_URL
-              value: https://api.stytch.com/v1/
+              value: https://test.stytch.com/v1/
           envFrom:
             - secretRef:
                 name: aa-api
