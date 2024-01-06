@@ -10,8 +10,8 @@ export const xionCoin = {
 };
 
 export const testnetChainInfo = {
-  rpc: "https://rpc.xion-testnet-1.burnt.com:443",
-  rest: "https://api.xion-testnet-1.burnt.com",
+  rpc: process.env.XION_RPC_URL || "https://rpc.xion-testnet-1.burnt.com:443",
+  rest: process.env.XION_REST_URL || "https://api.xion-testnet-1.burnt.com",
   chainId: "xion-testnet-1",
   stakeCurrency: xionCoin,
   chainName: "Xion Testnet",
