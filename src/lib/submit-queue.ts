@@ -1,5 +1,5 @@
+import type {queueAsPromised} from "fastq";
 import * as fastq from "fastq";
-import type { queueAsPromised } from "fastq";
 import {MsgRegisterAccount} from "../interfaces/generated/abstractaccount/v1/tx";
 import {AAClient} from "../modules/client";
 import {burntChainInfo} from "../modules/chain-info";
@@ -8,6 +8,7 @@ import {config} from "../app";
 import {DirectSecp256k1Wallet, OfflineDirectSigner} from "@cosmjs/proto-signing";
 import {fromHex} from "@cosmjs/encoding";
 import logger from "./logger";
+
 type Task = {
     msg: MsgRegisterAccount
 }
@@ -16,7 +17,8 @@ export const submitQueue: queueAsPromised<Task> = fastq.promise(asyncWorker, 1)
 
 
 let signer: OfflineDirectSigner | undefined;
-async function asyncWorker ({msg }: Task): Promise<string> {
+
+async function asyncWorker({msg}: Task): Promise<string> {
     const privateKey = config.privateKey;
     if (!privateKey) {
         throw new Error("Missing private key");
@@ -32,22 +34,39 @@ async function asyncWorker ({msg }: Task): Promise<string> {
     const accounts = await signer.getAccounts();
     const address = accounts[0].address;
 
-    const sequence = await getCurrentSequenceNumber(address, signer);
-    logger.info(`address: ${address} sequence ${sequence}`);
+    let attempt = 0;
+    const maxAttempts = 10;
+    let delay = 1000; // ms
 
-    const client = await AAClient.connectWithSigner(
-        burntChainInfo.rpc,
-        signer,
-        {
-            gasPrice: GasPrice.fromString("0uxion"),
-            sequence,
+    while (attempt < maxAttempts) {
+        try {
+            const sequence = await getCurrentSequenceNumber(address, signer);
+            logger.info(`Attempt ${attempt}: Address ${address}, Sequence ${sequence}`);
+
+            const client = await AAClient.connectWithSigner(
+                burntChainInfo.rpc,
+                signer,
+                {
+                    gasPrice: GasPrice.fromString("0uxion"),
+                    sequence,
+                }
+            );
+
+            return await client.registerAbstractAccount(msg);
+        } catch (error) {
+            if (isSequenceMismatchError(error)) {
+                attempt++;
+                logger.warn(error)
+                logger.warn(`Sequence mismatch error on attempt ${attempt}. Retrying after ${delay}ms`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2; // Increase delay for next attempt
+            } else {
+                throw error; // Rethrow other errors immediately
+            }
         }
-    );
+    }
 
-    // This does not poll for the tx to be included in a block
-    return await client.registerAbstractAccount(
-        msg
-    );
+    throw new Error('Exceeded maximum retry attempts for transaction submission');
 }
 
 export const getCurrentSequenceNumber = async (address: string, signer: OfflineDirectSigner): Promise<number> => {
@@ -57,4 +76,16 @@ export const getCurrentSequenceNumber = async (address: string, signer: OfflineD
         throw new Error(`Account '${address}' not found.`);
     }
     return account.sequence;
+};
+
+export const isSequenceMismatchError = (error: any): boolean => {
+    if (error && error.response && error.response.data && error.response.data.error) {
+        const errorData = error.response.data.error;
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+            return errorData.errors.some((err: any) => {
+                return err.message.includes('account sequence mismatch');
+            });
+        }
+    }
+    return false;
 };
