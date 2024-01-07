@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import * as stytch from "stytch";
 import {buildClient} from "./modules/utils";
-import {resetSequenceNumber} from "./lib/sequence-number-generator";
 
 // Configuring env vars
 dotenv.config();
@@ -79,6 +78,6 @@ export const httpClient = app.listen(process.env.PORT, async () => {
             `Account '${signer.address}' does not exist on chain. Send some tokens there before trying to query sequence.`
         );
     }
-
-    resetSequenceNumber(account.sequence, account.accountNumber);
+    
+    logger.info(`address: ${account.address} sequence ${account.sequence}`);
 });
