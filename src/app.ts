@@ -78,6 +78,6 @@ export const httpClient = app.listen(process.env.PORT, async () => {
             `Account '${signer.address}' does not exist on chain. Send some tokens there before trying to query sequence.`
         );
     }
-    
-    logger.info(`address: ${account.address} sequence ${account.sequence}`);
+    ;
+    logger.info({"address": account.address, "sequence": account.sequence});
 });

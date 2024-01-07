@@ -17,6 +17,7 @@ export const submitQueue: queueAsPromised<Task> = fastq.promise(asyncWorker, 1)
 
 
 let signer: OfflineDirectSigner | undefined;
+const maxAttempts = 5;
 
 async function asyncWorker({msg}: Task): Promise<string> {
     const privateKey = config.privateKey;
@@ -35,13 +36,11 @@ async function asyncWorker({msg}: Task): Promise<string> {
     const address = accounts[0].address;
 
     let attempt = 0;
-    const maxAttempts = 10;
-    let delay = 1000; // ms
-
+    let delay = 100; // ms
     while (attempt < maxAttempts) {
         try {
             const sequence = await getCurrentSequenceNumber(address, signer);
-            logger.info(`Attempt ${attempt}: Address ${address}, Sequence ${sequence}`);
+            logger.info({"attempt": attempt, "address": address, "sequence": sequence});
 
             const client = await AAClient.connectWithSigner(
                 burntChainInfo.rpc,
@@ -56,8 +55,7 @@ async function asyncWorker({msg}: Task): Promise<string> {
         } catch (error) {
             if (isSequenceMismatchError(error)) {
                 attempt++;
-                logger.warn(error)
-                logger.warn(`Sequence mismatch error on attempt ${attempt}. Retrying after ${delay}ms`);
+                logger.warn({"attempt": attempt, "address": address, "error": error, "delay": `${delay}ms`});
                 await new Promise(resolve => setTimeout(resolve, delay));
                 delay *= 2; // Increase delay for next attempt
             } else {
