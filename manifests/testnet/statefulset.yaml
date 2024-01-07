@@ -37,13 +37,19 @@ spec:
               value: "3000"
             - name: STYTCH_API_URL
               value: https://test.stytch.com/v1/
+            - name: XION_RPC_URL
+              value: http://rpc.aa-api.svc.cluster.local:26657
+            - name: XION_REST_URL
+              value: http://rpc.aa-api.svc.cluster.local:1317
           envFrom:
             - secretRef:
                 name: aa-api
             - secretRef:
                 name: aa-pkeys
           resources:
-            requests: {}
+            requests:
+              cpu: 25m
+              memory: 256Mi
           volumeMounts:
             - mountPath: /tmp/configmaps
               name: configmaps
