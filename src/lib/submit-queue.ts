@@ -79,13 +79,6 @@ export const getCurrentSequenceNumber = async (address: string, signer: OfflineD
 };
 
 export const isSequenceMismatchError = (error: any): boolean => {
-    if (error && error.response && error.response.data && error.response.data.error) {
-        const errorData = error.response.data.error;
-        if (errorData.errors && Array.isArray(errorData.errors)) {
-            return errorData.errors.some((err: any) => {
-                return err.message.includes('account sequence mismatch');
-            });
-        }
-    }
-    return false;
+    const message = (error as Error).message
+    return message.includes('account sequence mismatch');
 };
