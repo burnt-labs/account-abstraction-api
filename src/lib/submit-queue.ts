@@ -17,7 +17,7 @@ export const submitQueue: queueAsPromised<Task> = fastq.promise(asyncWorker, 1)
 
 
 let signer: OfflineDirectSigner | undefined;
-const maxAttempts = 5;
+const maxAttempts = 10;
 
 async function asyncWorker({msg}: Task): Promise<string> {
     const privateKey = config.privateKey;
