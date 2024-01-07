@@ -72,3 +72,18 @@ The application uses the following environment variables:
 - `STYTCH_API_URL`: Base URL for Stytch API.
 - `STYTCH_PROJECT_ID`: ID for Stytch project.
 - `STYTCH_SECRET`: Secret token to authenticate Stytch requests.
+
+## Using localstack for development
+
+[localstack](https://github.com/localstack/localstack) helps us mock AWS services for local development.
+
+```bash
+docker compose up localstack
+```
+
+### AWS SQS
+
+```bash
+# create queue
+aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name aa-api-jwt-create
+```
