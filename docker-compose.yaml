@@ -6,6 +6,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
     env_file:
       - .env
     ports:
@@ -15,6 +18,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.worker
+    environment:
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
     env_file:
       - .env
 

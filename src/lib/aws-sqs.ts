@@ -11,7 +11,6 @@ import logger from "./logger";
 const sqs = new SQSClient({
     region: awsConfig.region,
     endpoint: awsConfig.sqs.endpoint,
-    credentials: awsConfig.credentials,
 });
 
 export const sendMessage = async (message: Uint8Array) => {
