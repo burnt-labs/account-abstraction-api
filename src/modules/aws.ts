@@ -11,7 +11,7 @@ export const awsConfig = {
         maxFetchMessages: process.env.AWS_SQS_MAX_FETCH_MESSAGES || "1",
         waitTimeSeconds: process.env.AWS_SQS_WAIT_TIME_SECONDS || "5",
         queueUrl: process.env.AWS_SQS_QUEUE_URL || "http://localstack:4566/000000000000/testq",
-        backoffMaxAttempts: process.env.AWS_SQS_BACKOFF_MAX_ATTEMPTS || "10",
+        backoffMaxAttempts: process.env.AWS_SQS_BACKOFF_MAX_ATTEMPTS || "3",
         backoffDelayMs: process.env.AWS_SQS_BACKOFF_DELAY_MS || "1000",
         visibilityTimeout: process.env.AWS_SQS_VISIBILITY_TIMEOUT || "30",
     }

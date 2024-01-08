@@ -15,8 +15,6 @@ type Task = {
 }
 
 export const submitQueue: queueAsPromised<Task> = fastq.promise(asyncWorker, 1)
-
-
 let signer: OfflineDirectSigner | undefined;
 
 async function asyncWorker({msg}: Task): Promise<string> {
@@ -37,7 +35,7 @@ async function asyncWorker({msg}: Task): Promise<string> {
 
     let attempt = 0;
     let delayMs = parseInt(awsConfig.sqs.backoffDelayMs);
-    while (attempt < parseInt(awsConfig.sqs.backoffMaxAttempts)) {
+    while (attempt <= parseInt(awsConfig.sqs.backoffMaxAttempts)) {
         try {
             const account = await getAccount(address, signer);
             logger.info(
