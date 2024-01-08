@@ -6,7 +6,6 @@ import {instantiate2Address} from "@cosmjs/cosmwasm-stargate";
 import {sha256} from "@cosmjs/crypto";
 import logger from '../../lib/logger';
 import {buildClient} from "../../modules/utils";
-import {MsgRegisterAccount} from "../../interfaces/generated/abstractaccount/v1/tx";
 import {config} from "../../modules/config";
 import {stytchClient} from "../../modules/stytch";
 import {PropertyRequiredError} from "../../lib/errors";
@@ -103,15 +102,17 @@ router.post("/create", async (req, res) => {
             signature: Buffer.from(signature).toString("base64"),
         };
 
-        const registerAccountMsg: MsgRegisterAccount = {
+        const registerAccountMsg = {
             sender: accountData.address,
             codeId: Long.fromNumber(codeId),
-            msg: Buffer.from(JSON.stringify(initiateContractMsg)),
+            msg: Buffer.from(JSON.stringify(initiateContractMsg)).toString('base64'),
             funds: [],
-            salt: Buffer.from(encodedSalt),
+            salt: Buffer.from(encodedSalt).toString('base64'),
         };
 
-        const messageId = await sendMessage(registerAccountMsg);
+        const bytesMsg = Buffer.from(JSON.stringify(registerAccountMsg));
+        const messageId = await sendMessage(bytesMsg);
+
         return res.status(201).json({
             messgeId: messageId
         });

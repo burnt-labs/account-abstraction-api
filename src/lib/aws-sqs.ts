@@ -8,10 +8,11 @@ const sqs = new SQSClient({
     credentials: awsConfig.credentials,
 });
 
-export const sendMessage = async (messageBody: any) => {
+export const sendMessage = async (message: Uint8Array) => {
+    const base64Message = Buffer.from(message).toString('base64');
     const command = new SendMessageCommand({
         QueueUrl: awsConfig.sqs.queueUrl,
-        MessageBody: JSON.stringify(messageBody),
+        MessageBody: base64Message,
     });
 
     const response = await sqs.send(command);
