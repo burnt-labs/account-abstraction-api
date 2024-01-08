@@ -1,5 +1,11 @@
 import {awsConfig} from "../modules/aws";
-import {DeleteMessageBatchCommand, ReceiveMessageCommand, SendMessageCommand, SQSClient} from "@aws-sdk/client-sqs";
+import {
+    DeleteMessageBatchCommand,
+    GetQueueAttributesCommand,
+    ReceiveMessageCommand,
+    SendMessageCommand,
+    SQSClient,
+} from "@aws-sdk/client-sqs";
 import logger from "./logger";
 
 const sqs = new SQSClient({
@@ -24,10 +30,9 @@ export const sendMessage = async (message: Uint8Array) => {
 export const fetchMessages = async () => {
     const response = await sqs.send(
         new ReceiveMessageCommand({
-            MaxNumberOfMessages: awsConfig.sqs.maxFetchMessages,
+            MaxNumberOfMessages: parseInt(awsConfig.sqs.maxFetchMessages),
             QueueUrl: awsConfig.sqs.queueUrl,
-            WaitTimeSeconds: awsConfig.sqs.maxWaitSeconds,
-            VisibilityTimeout: awsConfig.sqs.visibilityTimeoutSeconds,
+            WaitTimeSeconds: parseInt(awsConfig.sqs.waitTimeSeconds),
         }),
     );
 
@@ -40,7 +45,7 @@ export const fetchMessages = async () => {
 };
 
 export const deleteMessages = async (messages: any) => {
-    if(messages.length === 0) {
+    if (messages.length === 0) {
         return;
     }
 
@@ -58,3 +63,24 @@ export const deleteMessages = async (messages: any) => {
 
     return response;
 };
+
+export const getQueueDepth = async () => {
+    const response = await sqs.send(
+        new GetQueueAttributesCommand({ // GetQueueAttributesRequest
+            QueueUrl: awsConfig.sqs.queueUrl, // required
+            AttributeNames: [ // AttributeNameList
+                "ApproximateNumberOfMessages",
+                "ApproximateNumberOfMessagesNotVisible",
+            ],
+        })
+    );
+
+    if (response.Attributes) {
+        logger.info({
+            "sqs.depth": {
+                "total": response.Attributes.ApproximateNumberOfMessages,
+                "not_visible": response.Attributes.ApproximateNumberOfMessagesNotVisible,
+            }
+        });
+    }
+}

@@ -8,6 +8,7 @@ import {config} from "../modules/config";
 import {DirectSecp256k1Wallet, OfflineDirectSigner} from "@cosmjs/proto-signing";
 import {fromHex} from "@cosmjs/encoding";
 import logger from "./logger";
+import {awsConfig} from "../modules/aws";
 
 type Task = {
     msg: MsgRegisterAccount
@@ -17,7 +18,6 @@ export const submitQueue: queueAsPromised<Task> = fastq.promise(asyncWorker, 1)
 
 
 let signer: OfflineDirectSigner | undefined;
-const maxAttempts = 10;
 
 async function asyncWorker({msg}: Task): Promise<string> {
     const privateKey = config.privateKey;
@@ -36,8 +36,8 @@ async function asyncWorker({msg}: Task): Promise<string> {
     const address = accounts[0].address;
 
     let attempt = 0;
-    let delay = 100; // ms
-    while (attempt < maxAttempts) {
+    let delayMs = parseInt(awsConfig.sqs.backoffDelayMs);
+    while (attempt < parseInt(awsConfig.sqs.backoffMaxAttempts)) {
         try {
             const sequence = await getCurrentSequenceNumber(address, signer);
             logger.info({"attempt": attempt, "address": address, "sequence": sequence});
@@ -55,9 +55,9 @@ async function asyncWorker({msg}: Task): Promise<string> {
         } catch (error) {
             if (isSequenceMismatchError(error)) {
                 attempt++;
-                logger.warn({"attempt": attempt, "address": address, "error": error, "delay": `${delay}ms`});
-                await new Promise(resolve => setTimeout(resolve, delay));
-                delay *= 2; // Increase delay for next attempt
+                logger.warn({"attempt": attempt, "address": address, "error": error, "delay": `${delayMs}ms`});
+                await new Promise(resolve => setTimeout(resolve, delayMs));
+                delayMs *= 2; // Increase delay for next attempt
             } else {
                 throw error; // Rethrow other errors immediately
             }

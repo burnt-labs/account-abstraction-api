@@ -1,4 +1,4 @@
-import { deleteMessages, fetchMessages } from "../lib/aws-sqs";
+import {deleteMessages, fetchMessages, getQueueDepth} from "../lib/aws-sqs";
 import logger from "../lib/logger";
 import { awsConfig } from "../modules/aws";
 import { buildClient } from "../modules/utils";
@@ -21,6 +21,7 @@ import { Message } from "@aws-sdk/client-sqs";
 
     while (true) {
         try {
+            await getQueueDepth();
             const messages: Message[] = await fetchMessages();
             for (const message of messages) {
                 if (message.Body) {
