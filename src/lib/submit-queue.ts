@@ -3,7 +3,7 @@ import * as fastq from "fastq";
 import {MsgRegisterAccount} from "../interfaces/generated/abstractaccount/v1/tx";
 import {AAClient} from "../modules/client";
 import {burntChainInfo} from "../modules/chain-info";
-import {GasPrice} from "@cosmjs/stargate";
+import {Account, GasPrice} from "@cosmjs/stargate";
 import {config} from "../modules/config";
 import {DirectSecp256k1Wallet, OfflineDirectSigner} from "@cosmjs/proto-signing";
 import {fromHex} from "@cosmjs/encoding";
@@ -39,16 +39,18 @@ async function asyncWorker({msg}: Task): Promise<string> {
     let delayMs = parseInt(awsConfig.sqs.backoffDelayMs);
     while (attempt < parseInt(awsConfig.sqs.backoffMaxAttempts)) {
         try {
-            const sequence = await getCurrentSequenceNumber(address, signer);
-            logger.info({"attempt": attempt, "address": address, "sequence": sequence});
+            const account = await getAccount(address, signer);
+            logger.info(
+                {"attempt": attempt, "address": address, "acctNum": account.accountNumber, "seq": account.sequence}
+            );
 
             const client = await AAClient.connectWithSigner(
                 burntChainInfo.rpc,
                 signer,
                 {
                     gasPrice: GasPrice.fromString("0uxion"),
-                    accountNumber: 0,
-                    sequence: sequence,
+                    accountNumber: account.accountNumber,
+                    sequence: account.sequence,
                 }
             );
 
@@ -68,13 +70,13 @@ async function asyncWorker({msg}: Task): Promise<string> {
     throw new Error('Exceeded maximum retry attempts for transaction submission');
 }
 
-export const getCurrentSequenceNumber = async (address: string, signer: OfflineDirectSigner): Promise<number> => {
+export const getAccount = async (address: string, signer: OfflineDirectSigner): Promise<Account> => {
     const client = await AAClient.connectWithSigner(burntChainInfo.rpc, signer);
     const account = await client.getAccount(address);
     if (!account) {
         throw new Error(`Account '${address}' not found.`);
     }
-    return account.sequence;
+    return account;
 };
 
 export const isSequenceMismatchError = (error: any): boolean => {
