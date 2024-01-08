@@ -2,32 +2,32 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: aa-api
+  name: aa-worker
   labels:
-    app: aa-api
+    app: aa-worker
 spec:
-  serviceName: aa-api
+  serviceName: aa-worker
   replicas: 1
   selector:
     matchLabels:
-      app: aa-api
+      app: aa-worker
   template:
     metadata:
       labels:
-        app: aa-api
+        app: aa-worker
     spec:
       serviceAccountName: aa-api
       nodeSelector:
-        burnt.com/service: public
+        burnt.com/service: private
       containers:
-        - name: aa-api
-          image: 385156030167.dkr.ecr.us-east-1.amazonaws.com/burnt/aa-api:${IMAGE_TAG}
+        - name: aa-worker
+          image: 385156030167.dkr.ecr.us-east-1.amazonaws.com/burnt/aa-worker:${IMAGE_TAG}
           command:
             - /sbin/tini
             - --
             - bash
             - -c
-            - /tmp/configmaps/start.sh
+            - /tmp/configmaps/start-worker.sh
           env:
             - name: CODE_ID
               value: "21"
@@ -41,6 +41,10 @@ spec:
               value: http://rpc.aa-api.svc.cluster.local:26657
             - name: XION_REST_URL
               value: http://rpc.aa-api.svc.cluster.local:1317
+            - name: AWS_SQS_ENDPOINT
+              value: https://sqs.us-east-1.amazonaws.com
+            - name: AWS_SQS_QUEUE_URL
+              value: https://sqs.us-east-1.amazonaws.com/385156030167/burnt-use1testnet-aa-api-jwt
           envFrom:
             - secretRef:
                 name: aa-api
@@ -48,15 +52,15 @@ spec:
                 name: aa-pkeys
           resources:
             requests:
-              cpu: 25m
-              memory: 256Mi
+                cpu: 25m
+                memory: 256Mi
           volumeMounts:
             - mountPath: /tmp/configmaps
               name: configmaps
       tolerations:
         - key: burnt.com/service
           operator: Equal
-          value: public
+          value: private
           effect: NoSchedule
       volumes:
         - name: configmaps
