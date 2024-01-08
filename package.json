@@ -7,7 +7,8 @@
     "start": "node dist/app.js",
     "dev": "dotenv -- nodemon src/app.ts",
     "test:unit": "jest --verbose --testPathPattern=.*/__tests__/unit_test.*\\.[jt]sx?$",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "worker:jwt-register": "node dist/workers/jwt-register.js"
   },
   "keywords": [],
   "author": "",

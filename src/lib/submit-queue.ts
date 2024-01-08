@@ -4,7 +4,7 @@ import {MsgRegisterAccount} from "../interfaces/generated/abstractaccount/v1/tx"
 import {AAClient} from "../modules/client";
 import {burntChainInfo} from "../modules/chain-info";
 import {GasPrice} from "@cosmjs/stargate";
-import {config} from "../app";
+import {config} from "../modules/config";
 import {DirectSecp256k1Wallet, OfflineDirectSigner} from "@cosmjs/proto-signing";
 import {fromHex} from "@cosmjs/encoding";
 import logger from "./logger";

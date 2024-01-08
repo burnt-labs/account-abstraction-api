@@ -1,32 +1,14 @@
-import express, {Express, Request, Response, NextFunction} from "express";
+import express, {Express, NextFunction, Request, Response} from "express";
 import logger from './lib/logger';
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import cors from "cors";
-import * as stytch from "stytch";
 import {buildClient} from "./modules/utils";
 import {awsConfig} from "./modules/aws";
+import {config} from "./modules/config";
 
 // Configuring env vars
 dotenv.config();
-
-// Project Config
-export const config = {
-    port: Number(process.env.PORT),
-    checksum: process.env.CHECKSUM,
-    codeId: Number(process.env.CODE_ID),
-    privateKey: process.env.PRIVATE_KEY,
-    stytchProjectId: process.env.STYTCH_PROJECT_ID,
-    stytchSecret: process.env.STYTCH_SECRET,
-    stytchAPIUrl: process.env.STYTCH_API_URL,
-};
-
-// Initialize Stytch client
-export const stytchClient = new stytch.Client({
-    project_id: config.stytchProjectId || "",
-    secret: config.stytchSecret || "",
-    env: config.stytchAPIUrl,
-});
 
 // Basic express setup
 const app: Express = express();
@@ -37,15 +19,11 @@ function logRequest(req: Request, res: Response, next: NextFunction) {
     next();
 }
 
-app.use(logRequest);
-
 // Error logging middleware
 function logError(err: Error, req: Request, res: Response, next: NextFunction) {
     logger.error(`${err.message}`);
     next(err);
 }
-
-app.use(logError);
 
 // Importing routes
 var v1Healthz = require("./api/routes/healthz");
@@ -56,6 +34,8 @@ var v1Sessions = require("./api/routes/sessions");
 
 // Middlewares
 app.use(cors());
+app.use(logRequest);
+app.use(logError);
 app.use(bodyParser.json());
 app.use(
     bodyParser.urlencoded({

@@ -5,7 +5,10 @@ export const awsConfig = {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "test",
     },
     sqs: {
-        endpoint: process.env.AWS_SQS_ENDPOINT || "http://localstack:4566",
-        queueUrl: process.env.AWS_SQS_QUEUE_URL ||  "http://localstack:4566/000000000000/testq",
+        endpoint: process.env.AWS_SQS_ENDPOINT || "http://localstack:4566", // https://{service}.{region}.amazonaws.com
+        maxFetchMessages: 10,
+        maxWaitSeconds: 20,
+        queueUrl: process.env.AWS_SQS_QUEUE_URL || "http://localstack:4566/000000000000/testq",
+        visibilityTimeoutSeconds: 30,
     }
 };

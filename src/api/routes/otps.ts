@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {stytchClient} from "../../app";
+import {stytchClient} from "../../modules/stytch";
 import {PropertyRequiredError} from "../../lib/errors";
 import logger from "../../lib/logger";
 

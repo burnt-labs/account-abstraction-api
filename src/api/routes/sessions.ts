@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {stytchClient} from "../../app";
+import {stytchClient} from "../../modules/stytch";
 import logger from "../../lib/logger";
 import {PropertyRequiredError} from "../../lib/errors";
 
@@ -44,7 +44,7 @@ router.post("/authenticate", async (req, res) => {
         in an authenticate request, not multiple."
      */
     let data;
-    if(session_token) {
+    if (session_token) {
         data = {
             session_token,
             session_duration_minutes,
