@@ -43,7 +43,8 @@ import { Message } from "@aws-sdk/client-sqs";
                 }
             }
         } catch (error) {
-            logger.error({"error": error});
+            const err = (error as Error)
+            logger.error({"error": err});
         }
     }
 })();

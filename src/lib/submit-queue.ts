@@ -47,6 +47,7 @@ async function asyncWorker({msg}: Task): Promise<string> {
                 signer,
                 {
                     gasPrice: GasPrice.fromString("0uxion"),
+                    accountNumber: 0,
                     sequence: sequence,
                 }
             );
@@ -59,7 +60,7 @@ async function asyncWorker({msg}: Task): Promise<string> {
                 await new Promise(resolve => setTimeout(resolve, delayMs));
                 delayMs *= 2; // Increase delay for next attempt
             } else {
-                throw error; // Rethrow other errors immediately
+                throw error;
             }
         }
     }
