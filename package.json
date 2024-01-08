@@ -7,12 +7,14 @@
     "start": "node dist/app.js",
     "dev": "dotenv -- nodemon src/app.ts",
     "test:unit": "jest --verbose --testPathPattern=.*/__tests__/unit_test.*\\.[jt]sx?$",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "worker:jwt-register": "node dist/workers/jwt-register.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-sqs": "^3.485.0",
     "@cosmjs/cosmwasm-stargate": "^0.31.3",
     "@cosmjs/proto-signing": "^0.31.3",
     "@cosmjs/stargate": "^0.31.3",
@@ -25,7 +27,8 @@
     "express": "^4.18.2",
     "fastq": "^1.15.0",
     "jose": "^5.1.0",
-    "stytch": "^9.0.6"
+    "stytch": "^9.0.6",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.11",

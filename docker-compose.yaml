@@ -2,11 +2,32 @@ version: "3.8"
 
 services:
 
-  develop:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
     env_file:
       - .env
     ports:
       - "3000:3000"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
+    env_file:
+      - .env
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"            # LocalStack Gateway
+      - "4510-4559:4510-4559"  # external services port range
+    volumes: # https://docs.localstack.cloud/references/init-hooks/
+      - ".localstack/bootstrap:/etc/localstack/init/ready.d/"

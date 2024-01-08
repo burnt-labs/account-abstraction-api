@@ -1,11 +1,12 @@
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: aa-api
   labels:
     app: aa-api
 spec:
+  serviceName: aa-api
   replicas: 1
   selector:
     matchLabels:
@@ -26,7 +27,7 @@ spec:
             - --
             - bash
             - -c
-            - /tmp/configmaps/start.sh
+            - /tmp/configmaps/start-api.sh
           env:
             - name: CODE_ID
               value: "21"
@@ -35,12 +36,24 @@ spec:
             - name: PORT
               value: "3000"
             - name: STYTCH_API_URL
-              value: https://api.stytch.com/v1/
+              value: https://test.stytch.com/v1/
+            - name: XION_RPC_URL
+              value: http://rpc.aa-api.svc.cluster.local:26657
+            - name: XION_REST_URL
+              value: http://rpc.aa-api.svc.cluster.local:1317
+            - name: AWS_SQS_ENDPOINT
+              value: https://sqs.us-east-1.amazonaws.com
+            - name: AWS_SQS_QUEUE_URL
+              value: https://sqs.us-east-1.amazonaws.com/385156030167/burnt-use1testnet-aa-api-jwt
           envFrom:
             - secretRef:
                 name: aa-api
+            - secretRef:
+                name: aa-pkeys
           resources:
-            requests: {}
+            requests:
+                cpu: 25m
+                memory: 256Mi
           volumeMounts:
             - mountPath: /tmp/configmaps
               name: configmaps

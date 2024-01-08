@@ -10,6 +10,7 @@
 
 # dotenv environment variables file
 .env
+.envrc
 
 # MacOS folder attribute files
 .DS_Store

@@ -1,0 +1,69 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: aa-worker
+  labels:
+    app: aa-worker
+spec:
+  serviceName: aa-worker
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aa-worker
+  template:
+    metadata:
+      labels:
+        app: aa-worker
+    spec:
+      serviceAccountName: aa-api
+      nodeSelector:
+        burnt.com/service: private
+      containers:
+        - name: aa-worker
+          image: 385156030167.dkr.ecr.us-east-1.amazonaws.com/burnt/aa-worker:${IMAGE_TAG}
+          command:
+            - /sbin/tini
+            - --
+            - bash
+            - -c
+            - /tmp/configmaps/start-worker.sh
+          env:
+            - name: CODE_ID
+              value: "21"
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: STYTCH_API_URL
+              value: https://test.stytch.com/v1/
+            - name: XION_RPC_URL
+              value: http://rpc.aa-api.svc.cluster.local:26657
+            - name: XION_REST_URL
+              value: http://rpc.aa-api.svc.cluster.local:1317
+            - name: AWS_SQS_ENDPOINT
+              value: https://sqs.us-east-1.amazonaws.com
+            - name: AWS_SQS_QUEUE_URL
+              value: https://sqs.us-east-1.amazonaws.com/385156030167/burnt-use1testnet-aa-api-jwt
+          envFrom:
+            - secretRef:
+                name: aa-api
+            - secretRef:
+                name: aa-pkeys
+          resources:
+            requests:
+                cpu: 25m
+                memory: 256Mi
+          volumeMounts:
+            - mountPath: /tmp/configmaps
+              name: configmaps
+      tolerations:
+        - key: burnt.com/service
+          operator: Equal
+          value: private
+          effect: NoSchedule
+      volumes:
+        - name: configmaps
+          configMap:
+            name: aa-api
+            defaultMode: 0777

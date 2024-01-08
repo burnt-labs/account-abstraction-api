@@ -2,9 +2,11 @@
 namespace: aa-api
 
 resources:
-  - deployment.yaml
+  - statefulset-api.yaml
+  - statefulset-worker.yaml
 
 configMapGenerator:
   - name: aa-api
     files:
-      - configmaps/start.sh
+      - configmaps/start-api.sh
+      - configmaps/start-worker.sh
