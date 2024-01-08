@@ -33,6 +33,7 @@ export const fetchMessages = async () => {
             MaxNumberOfMessages: parseInt(awsConfig.sqs.maxFetchMessages),
             QueueUrl: awsConfig.sqs.queueUrl,
             WaitTimeSeconds: parseInt(awsConfig.sqs.waitTimeSeconds),
+            VisibilityTimeout: parseInt(awsConfig.sqs.visibilityTimeout),
         }),
     );
 

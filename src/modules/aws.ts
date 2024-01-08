@@ -11,5 +11,6 @@ export const awsConfig = {
         queueUrl: process.env.AWS_SQS_QUEUE_URL || "http://localstack:4566/000000000000/testq",
         backoffMaxAttempts: process.env.AWS_SQS_BACKOFF_MAX_ATTEMPTS || "10",
         backoffDelayMs: process.env.AWS_SQS_BACKOFF_DELAY_MS || "1000",
+        visibilityTimeout: process.env.AWS_SQS_VISIBILITY_TIMEOUT || "30",
     }
 };

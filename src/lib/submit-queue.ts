@@ -47,7 +47,7 @@ async function asyncWorker({msg}: Task): Promise<string> {
                 signer,
                 {
                     gasPrice: GasPrice.fromString("0uxion"),
-                    sequence,
+                    sequence: sequence,
                 }
             );
 
