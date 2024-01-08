@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import * as stytch from "stytch";
 import {buildClient} from "./modules/utils";
+import {awsConfig} from "./modules/aws";
 
 // Configuring env vars
 dotenv.config();
@@ -79,5 +80,6 @@ export const httpClient = app.listen(process.env.PORT, async () => {
         );
     }
 
-    logger.info({"address": account.address, "sequence": account.sequence});
+    logger.info({"xion": {"address": account.address, "sequence": account.sequence}});
+    logger.info({"aws": {"region": awsConfig.region, "sqs": awsConfig.sqs}})
 });

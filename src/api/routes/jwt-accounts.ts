@@ -9,7 +9,8 @@ import { buildClient } from "../../modules/utils";
 import { MsgRegisterAccount } from "../../interfaces/generated/abstractaccount/v1/tx";
 import { config, stytchClient } from "../../app";
 import { PropertyRequiredError } from "../../lib/errors";
-import { submitQueue } from "../../lib/submit-queue";
+import { sendMessage } from "../../lib/aws-sqs";
+
 interface IRequestBody {
   salt: string;
   session_jwt: string;
@@ -109,9 +110,9 @@ router.post("/create", async (req, res) => {
       salt: Buffer.from(encodedSalt),
     };
 
-    const result = await submitQueue.push({ msg: registerAccountMsg });
+    const messageId = await sendMessage(registerAccountMsg);
     return res.status(201).json({
-      transactionHash: result
+      messgeId: messageId
     });
   } catch (error) {
     const err = {

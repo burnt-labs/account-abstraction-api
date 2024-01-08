@@ -85,5 +85,21 @@ docker compose up localstack
 
 ```bash
 # create queue
-aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name aa-api-jwt-create
+aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name my-test-queue
+# get queue url
+aws --endpoint-url=http://localhost:4566 sqs get-queue-url --queue-name <queue-name>
+# list queue
+aws --endpoint-url=http://localhost:4566 sqs list-queues
+# send message
+aws --endpoint-url=http://localhost:4566 sqs send-message --queue-url <queue-url> --message-body <message>
+# receive message
+aws --endpoint-url=http://localhost:4566 sqs receive-message --queue-url <queue-url>
+# purge queue
+aws --endpoint-url=http://localhost:4566 sqs purge-queue --queue-url <queue-url>
+# delete queue
+aws --endpoint-url=http://localhost:4566 sqs delete-queue --queue-url <queue-url>
+# set attributes
+aws --endpoint-url=http://localhost:4566 sqs set-queue-attributes --queue-url=<queue-url> --attributes file://<file-name>.json
+# get attributes
+aws --endpoint-url=http://localhost:4566 sqs  get-queue-attributes --queue-url=<queue-url>
 ```
